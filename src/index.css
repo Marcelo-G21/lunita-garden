@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+.bg-garden {
+    background-image: url('/bg-garden.png');
+    background-repeat: repeat;
+    background-size: 450px 450px;
+    background-position: top left;
+    image-rendering: pixelated;
+  }
