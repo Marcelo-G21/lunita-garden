@@ -7,3 +7,9 @@
     background-position: top left;
     image-rendering: pixelated;
   }
+
+  .lunita-sprite {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+  
