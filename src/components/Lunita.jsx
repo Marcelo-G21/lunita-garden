@@ -50,7 +50,7 @@ export default function Lunita() {
     ],
   };
 
-  const spriteScales = { idle: 0.7, sleep: 0.7, walk: 1, pet: 0.7, knead: 1.2 };
+  const spriteScales = { idle: 0.7, sleep: 0.7, walk: 1, pet: 0.7, knead: 1.1 };
   const frameSpeed = { idle: 300, walk: 250, sleep: 300, knead: 250 };
   const pauseAfterIdle = 1000;
 
