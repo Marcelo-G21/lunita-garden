@@ -48,10 +48,18 @@ export default function Lunita() {
       "/sprites/knead2.png",
       "/sprites/knead3.png",
     ],
+    eat: ["/sprites/eat1.png", "/sprites/eat2.png", "/sprites/eat3.png"],
   };
 
-  const spriteScales = { idle: 0.7, sleep: 0.7, walk: 1, pet: 0.7, knead: 1 };
-  const frameSpeed = { idle: 300, walk: 250, sleep: 300, knead: 250 };
+  const spriteScales = {
+    idle: 0.7,
+    sleep: 0.7,
+    walk: 1,
+    pet: 0.7,
+    knead: 1,
+    eat: 1.1,
+  };
+  const frameSpeed = { idle: 300, walk: 250, sleep: 300, knead: 250, eat: 250 };
   const pauseAfterIdle = 1000;
 
   const idleTimeout = useRef(null);
@@ -71,6 +79,21 @@ export default function Lunita() {
       ) {
         setState("pet");
         setFrame(0);
+        setLastInteraction(Date.now());
+        return;
+      }
+ 
+      // Clic en la caja de heno
+      const box = getHayboxRect();
+      if (
+        box &&
+        x >= box.x - box.width / 2 &&
+        x <= box.x + box.width / 2 &&
+        y >= box.y - box.height / 2 &&
+        y <= box.y + box.height / 2
+      ) {
+        setTarget({ x: box.x + 60, y: box.y });
+        setState("walk");
         setLastInteraction(Date.now());
         return;
       }
@@ -178,6 +201,15 @@ export default function Lunita() {
     };
   }, [state]);
 
+  // Eat (comer, loop infinito)
+  useEffect(() => {
+    if (state !== "eat") return;
+    const id = setInterval(() => {
+      setFrame((f) => (f + 1) % sprites.eat.length);
+    }, frameSpeed.eat);
+    return () => clearInterval(id);
+  }, [state]);
+
   // Knead (amasar, en loop infinito)
   useEffect(() => {
     if (state !== "knead") return;
@@ -214,7 +246,29 @@ export default function Lunita() {
       ];
     if (state === "pet") return sprites.pet[frame % sprites.pet.length];
     if (state === "knead") return sprites.knead[frame % sprites.knead.length];
+    if (state === "eat") return sprites.eat[frame % sprites.eat.length]; 
     return sprites.idle[frame % sprites.idle.length];
+  };
+
+  const getHayboxRect = () => {
+    const boxEl = document.getElementById("haybox");
+    if (!boxEl) return null;
+    const rect = boxEl.getBoundingClientRect();
+    return {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+      width: rect.width,
+      height: rect.height,
+    };
+  };
+
+  const checkHayboxCollision = (x, y) => {
+    const box = getHayboxRect();
+    if (!box) return false;
+    return (
+      Math.abs(x - box.x) < box.width / 2 + HALF &&
+      Math.abs(y - box.y) < box.height / 2 + HALF
+    );
   };
 
   // Obtener posición y tamaño de la cama
@@ -259,17 +313,18 @@ export default function Lunita() {
     if (dist <= DISTANCE_THRESHOLD && state === "walk") {
       setPosition({ x: target.x, y: target.y });
       setTarget({ x: target.x, y: target.y }); // para detener animación
-    
+
       if (checkBedCollision(target.x, target.y)) {
         setState("knead");
+      } else if (checkHayboxCollision(target.x, target.y)) {
+        setState("eat");
       } else {
         setState("idle");
       }
-    
+
       setFrame(0);
       setLastInteraction(Date.now());
     }
-    
   };
 
   const distance = Math.sqrt(
